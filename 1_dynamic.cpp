@@ -1,0 +1,199 @@
+﻿#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <vector>
+#include <algorithm>
+#include <cmath>
+#include <Windows.h>
+
+using namespace std;
+
+struct Book {
+	string book_name;
+	string authors_name;
+	unsigned int year_published;
+	unsigned int page_count;
+	unsigned int price;
+};
+
+int main()
+{
+    fstream file;
+    int books_written = 0;
+	int operand = 0;
+    Book* b_temp = new Book();
+    Book* t[10];
+
+	for (int i = 0; i < 10; i++) {
+		t[i] = new Book();
+	}
+
+	cout << "Initial file len: ";
+	cin >> books_written;
+    while (true) {
+        string temp = "";
+
+        int rowsInTotal{ 0 };
+        int search_choice;
+
+        string str_search_term;
+        int int_search_term;
+        bool found{ false };
+
+        cout << "\n\nmenu\n";
+        cout << "1 - input\n";
+        cout << "2 - output\n";
+        cout << "3 - search\n";
+        cout << "4 - exit\n";
+        cout << "-------------\n";
+
+        cout << "choice: ";
+        int choice;
+        cin >> choice;
+
+        switch (choice) {
+        case 1:
+            system("cls");
+			file.open("kek.dat", ios::out | ios::app | ios::binary);
+            cout << "\nauthors_name: ";
+            cin >> b_temp->authors_name;
+
+            cout << "\nbook_name: ";
+            cin >> b_temp->book_name;
+
+            cout << "\nyear_published: ";
+            cin >> b_temp->year_published;
+
+            cout << "\npage_count: ";
+            cin >> b_temp->page_count;
+
+            cout << "\nprice: ";
+            cin >> b_temp->price;
+
+			file.write((char*)b_temp, sizeof(Book));
+            file.close();
+
+            books_written += 1;
+            break;
+
+        case 2:
+            system("cls");
+            file.open("kek.dat", ios::in | ios::binary);
+			//file.seekg(0, ios::beg);
+			for (size_t idx = 0; idx < books_written; idx++) {
+				t[idx] = new Book();
+				file.read((char*)t[idx], sizeof(Book));
+			}
+
+            cout << "Record # | authors_name | book_name | year_published | page_count | price \n";
+            for (size_t idx = 0; idx < books_written; idx++) {
+                cout << "Record # " << idx << " | " << t[idx]->authors_name << " | " << t[idx]->book_name << " | " << t[idx]->year_published << " | " << t[idx]->page_count << " | " << t[idx]->price << " | " << endl;
+            }
+
+            file.close();
+            break;
+        case 3:
+			system("cls");
+			// выбор поля для поиска
+			cout << "specify search term (1-5): ";
+			search_choice;
+			cin >> search_choice;
+			while (search_choice > 5 || search_choice < 1) {
+				cout << "\nBruh, (1-5): ";
+				cin >> search_choice;
+			}
+
+			cout << "\nYou chose " << search_choice << ", which means - ";
+			if (search_choice == 1)
+				cout << "authors name\n";
+			if (search_choice == 2)
+				cout << "book name\n";
+			if (search_choice == 3)
+				cout << "year published\n";
+			if (search_choice == 4)
+				cout << "page count\n";
+			if (search_choice == 5)
+				cout << "price\n";
+
+			// ввод "строки" для поиска
+			cout << "what to search for?: ";
+			if (search_choice == 1 || search_choice == 2) {
+				cin >> str_search_term;
+			}
+			else {
+				cin >> int_search_term;
+				cout << "Enter operand (1 - >, 2 - <, 3 - =): ";
+				cin >> operand;
+				if (operand < 1 or operand > 3) {
+					cout << "\nDon't have such operand\n";
+					break;
+				}
+			};
+			file.read((char*)&t, sizeof(t));
+			// поиск
+			for (size_t i{ 0 }; i < books_written; ++i) {
+				found = false;
+
+				Book* inf = t[i];
+
+				switch (search_choice) {
+				case 1:
+					if (inf->authors_name.find(str_search_term) != string::npos) {
+						found = true;
+					}
+					break;
+				case 2:
+					if (inf->book_name.find(str_search_term) != string::npos) {
+						found = true;
+					}
+					break;
+				case 3:
+					if (operand == 3 && inf->year_published == int_search_term) {
+						found = true;
+					}
+					if (operand == 1 && inf->year_published > int_search_term) {
+						found = true;
+					}
+					if (operand == 2 && inf->year_published < int_search_term) {
+						found = true;
+					}
+					break;
+				case 4:
+					if (operand == 3 && inf->page_count == int_search_term) {
+						found = true;
+					}
+					if (operand == 1 && inf->page_count > int_search_term) {
+						found = true;
+					}
+					if (operand == 2 && inf->page_count < int_search_term) {
+						found = true;
+					}
+					break;
+				case 5:
+					if (operand == 3 && inf->price == int_search_term) {
+						found = true;
+					}
+					if (operand == 1 && inf->price > int_search_term) {
+						found = true;
+					}
+					if (operand == 2 && inf->price < int_search_term) {
+						found = true;
+					}
+					break;
+				}
+
+				if (!found)
+					continue;
+
+				cout << "\nFound: " << " | " << inf->authors_name << " | " << inf->book_name << " | " << inf->year_published << " | " << inf->page_count << " | " << inf->price << " | " << endl;
+			}
+			break;
+        case 4:
+			exit(1);
+		default:
+			cout << "no such option, please try again";
+		}
+	}
+	file.close();
+}
